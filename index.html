@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영상 대사 퀴즈 - 15문제</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .quiz-container {
+      width: 92%;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 28px 0;
+    }
+
+    .counter {
+      text-align: right;
+      color: #aaa;
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+
+    .video-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: black;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Crop the YouTube iframe so YouTube's top/bottom overlays
+       sit outside the visible quiz window as much as possible. */
+    #player {
+      position: absolute;
+      width: 112%;
+      height: 126%;
+      left: -6%;
+      top: -13%;
+    }
+
+    /* Extra crop for videos with hardcoded subtitles at the bottom. */
+    .video-container.crop-bottom #player {
+      width: 124%;
+      height: 142%;
+      left: -12%;
+      top: -8%;
+    }
+
+    .video-cover {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-cover.hidden {
+      display: none;
+    }
+
+    .video-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: black;
+    }
+
+    .quote {
+      min-height: 76px;
+      margin-top: 22px;
+      font-size: 2rem;
+      font-weight: bold;
+      line-height: 1.45;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+    }
+
+    .source {
+      min-height: 28px;
+      margin-top: 7px;
+      color: #aaa;
+      font-size: 1.05rem;
+      visibility: hidden;
+    }
+
+    .controls {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover { opacity: 0.8; }
+
+    .primary {
+      background: white;
+      color: black;
+    }
+
+    .secondary {
+      background: #333;
+      color: white;
+    }
+
+    .next {
+      background: #666;
+      color: white;
+    }
+
+    /* Intro / rules page */
+    .intro-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #111;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .intro-card {
+      width: min(760px, 92vw);
+      text-align: left;
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 38px 42px;
+      background: #171717;
+    }
+
+    .intro-card h1 {
+      margin: 0 0 26px 0;
+      font-size: 2.3rem;
+      text-align: center;
+    }
+
+    .intro-card ul {
+      margin: 0;
+      padding-left: 1.5em;
+      font-size: 1.35rem;
+      line-height: 1.8;
+    }
+
+    .intro-note {
+      margin-top: 24px;
+      padding: 16px 18px;
+      background: #222;
+      border-radius: 8px;
+      font-size: 1.25rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .start-wrap {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .start-button {
+      padding: 14px 30px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      background: white;
+      color: black;
+    }
+
+    .hidden-screen {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-card">
+      <h1>영상 대사 퀴즈 <span style="font-size:0.55em;color:#aaa;">(총 15문제)</span></h1>
+
+      <ul>
+        <li>썸네일 장면의 대사 맞추기</li>
+        <li>대사, 드라마/영화 제목, 등장인물 이름을 다 맞추면 3점</li>
+      </ul>
+
+      <div class="intro-note">
+        무조건 대사와 함께 말해야 함
+      </div>
+
+      <div class="start-wrap">
+        <button class="start-button" onclick="startQuiz()">퀴즈 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-container">
+
+    <div class="counter">
+      <span id="current-number">1</span> /
+      <span id="total-number">0</span>
+    </div>
+
+    <div id="video-container" class="video-container">
+      <div id="player"></div>
+
+      <div id="video-cover" class="video-cover">
+        <img id="cover-image" src="" alt="문제 장면">
+      </div>
+    </div>
+
+    <div id="quote" class="quote"></div>
+    <div id="source" class="source"></div>
+
+    <div class="controls">
+      <button class="primary" onclick="playMuted()">▶ 무음으로 재생</button>
+      <button class="secondary" onclick="replayMuted()">↻ 다시 재생</button>
+      <button class="secondary" onclick="showQuote()">대사 공개</button>
+      <button class="primary" onclick="playWithSound()">🔊 소리와 함께 재생</button>
+      <button class="next" onclick="nextQuestion()">다음 →</button>
+    </div>
+
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    /*
+      Order:
+      1-10 TV / drama first, with 태양의 후예 fixed at #8.
+      Films are placed afterward.
+      Star Wars is the final question.
+    */
+    const questions = [
+
+      // 1
+      {
+        videoId: "qHRF1an9ygs",
+        thumbnail: "thumbnails/01.jpg",
+        start: 0,
+        end: 14,
+        quote: "이러다가는 다 죽어",
+        source: "오징어게임",
+        character: "오일남"
+      },
+
+      // 2
+      {
+        videoId: "UJZqS8dyUA8",
+        thumbnail: "thumbnails/02.jpg",
+        start: 204,
+        end: 285,
+        quote: "애기야 가자!",
+        source: "파리의 연인",
+        character: "한기주"
+      },
+
+      // 3
+      {
+        videoId: "pQpHe9S1oLk",
+        thumbnail: "thumbnails/03.jpg",
+        start: 0,
+        end: 30,
+        quote: "너와 함께한 시간 모두 눈부셨다. 날이 좋아서, 날이 좋지 않아서, 날이 적당해서, 모든 날이 좋았다.",
+        source: "도깨비",
+        character: ""
+      },
+
+      // 4
+      {
+        videoId: "sycCLllS9qs",
+        thumbnail: "thumbnails/04.jpg",
+        start: 93,
+        end: 115,
+        quote: "사랑에 빠진 게 죄는 아니잖아!",
+        source: "부부의 세계",
+        character: "이태오"
+      },
+
+      // 5
+      {
+        videoId: "CuRqGA7Wjcg",
+        thumbnail: "thumbnails/05.jpg",
+        start: 0,
+        end: 7,
+        quote: "날 추앙해요",
+        source: "나의 해방일지",
+        character: "염미정",
+        cropBottom: true
+      },
+
+      // 6
+      {
+        videoId: "QzjqVxML3zc",
+        thumbnail: "thumbnails/06.jpg",
+        start: 0,
+        end: null,
+        quote: "이게 최선입니까? 확실해요?",
+        source: "시크릿 가든",
+        character: "김주원"
+      },
+
+      // 7
+      {
+        videoId: "FtTlD6uWBWY",
+        thumbnail: "thumbnails/07.jpg",
+        start: 96,
+        end: 105,
+        quote: "우린 아직 다 미생이야.",
+        source: "미생",
+        character: "오상식"
+      },
+
+      // 8 — requested position
+      {
+        videoId: "lzQifdOw5Rc",
+        thumbnail: "thumbnails/12.jpg",
+        start: 0,
+        end: null,
+        quote: "그 어려운 걸 자꾸 해냅니다, 내가",
+        source: "태양의 후예",
+        character: "유시진"
+      },
+
+      // 9
+      {
+        videoId: "fSf05ZftFNw",
+        thumbnail: "thumbnails/09.jpg",
+        start: 130,
+        end: 145,
+        quote: "뭐 타는 냄새 안 나요? 내 마음이 지금 불타고 있잖아요.",
+        source: "불새",
+        character: "서정민"
+      },
+
+      // 10
+      {
+        videoId: "mPsAQ8e1bmA",
+        thumbnail: "thumbnails/10.jpg",
+        start: 822,
+        end: 836,
+        quote: "홍시맛이 났는데 어찌 홍시라 생각했느냐 하시면 그냥 홍시맛이 나서 홍시라 생각한 것인데",
+        source: "대장금",
+        character: "장금이"
+      },
+
+      // 11 — film
+      {
+        videoId: "buCg8rThVfo",
+        thumbnail: "thumbnails/08.jpg",
+        start: 4,
+        end: 11,
+        quote: "살려는 드릴게",
+        source: "신세계",
+        character: "이중구"
+      },
+
+      // 12 — film
+      {
+        videoId: "XsM-QWpDgBg",
+        thumbnail: "thumbnails/15.jpg",
+        start: 16,
+        end: 22,
+        quote: "묻고 더블로 가!",
+        source: "타짜",
+        character: ""
+      },
+
+      // 13 — film
+      // Playback timestamps were not provided, so this currently plays from the beginning to the end.
+      {
+        videoId: "XXr7DabYqsc",
+        thumbnail: "thumbnails/14.jpg",
+        start: 119,
+        end: 137,
+        quote: "어떻게 사랑이 변하니",
+        source: "봄날은 간다",
+        character: "상우"
+      },
+
+      // 14 — film
+      {
+        videoId: "fos5qYYDED0",
+        thumbnail: "thumbnails/13.jpg",
+        start: 5,
+        end: 11,
+        quote: "내가 왕이 될 상인가",
+        source: "관상",
+        character: "수양대군"
+      },
+
+      // 15 — final question
+      {
+        videoId: "GLheiLGZ1k8",
+        thumbnail: "thumbnails/11.jpg",
+        start: 114,
+        end: 118,
+        quote: "I am your father.",
+        source: "Star Wars: The Empire Strikes Back / 스타워즈: 제국의 역습",
+        character: "다스 베이더"
+      }
+
+    ];
+
+    let player;
+    let currentQuestion = 0;
+    let stopTimer;
+    let stopWatcher;
+    let quizStarted = false;
+
+    const cover = document.getElementById("video-cover");
+    const coverImage = document.getElementById("cover-image");
+
+    document.getElementById("total-number").textContent = questions.length;
+
+    function startQuiz() {
+      quizStarted = true;
+      document.getElementById("intro-screen").classList.add("hidden-screen");
+      loadQuestion();
+    }
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        height: "100%",
+        width: "100%",
+        videoId: questions[0].videoId,
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          rel: 0,
+          playsinline: 1,
+          cc_load_policy: 0,
+          iv_load_policy: 3
+        },
+        events: {
+          onReady: function(event) {
+            try {
+              event.target.unloadModule("captions");
+            } catch (e) {}
+
+            if (quizStarted) {
+              loadQuestion();
+            }
+          },
+          onStateChange: function(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+              showCover();
+            }
+          }
+        }
+      });
+    }
+
+    function showCover() {
+      cover.classList.remove("hidden");
+    }
+
+    function hideCover() {
+      cover.classList.add("hidden");
+    }
+
+    function loadQuestion() {
+      if (!player || typeof player.cueVideoById !== "function") {
+        setTimeout(loadQuestion, 100);
+        return;
+      }
+
+      clearTimeout(stopTimer);
+      clearInterval(stopWatcher);
+
+      const q = questions[currentQuestion];
+
+      document.getElementById("current-number").textContent = currentQuestion + 1;
+      document.getElementById("quote").textContent = q.quote;
+      document.getElementById("source").textContent =
+        q.character ? `${q.source} · ${q.character}` : q.source;
+
+      document.getElementById("quote").style.visibility = "hidden";
+      document.getElementById("source").style.visibility = "hidden";
+
+      const container = document.getElementById("video-container");
+      container.classList.toggle("crop-bottom", !!q.cropBottom);
+
+      coverImage.src = q.thumbnail;
+      showCover();
+
+      player.cueVideoById({
+        videoId: q.videoId,
+        startSeconds: q.start
+      });
+
+      setTimeout(function() {
+        try {
+          player.unloadModule("captions");
+        } catch (e) {}
+      }, 400);
+    }
+
+    function playSegment(soundOn) {
+      clearTimeout(stopTimer);
+      clearInterval(stopWatcher);
+
+      const q = questions[currentQuestion];
+
+      hideCover();
+
+      if (soundOn) {
+        player.unMute();
+      } else {
+        player.mute();
+      }
+
+      /*
+        seekTo() is asynchronous. The old code started a fixed timer
+        immediately after seekTo(), so buffering/seeking time was counted
+        as part of the clip and made every segment end too early.
+
+        Instead, we now watch YouTube's actual playback timestamp and stop
+        only when player.getCurrentTime() reaches q.end.
+      */
+      player.seekTo(q.start, true);
+      player.playVideo();
+
+      if (q.end !== null && q.end !== undefined) {
+        stopWatcher = setInterval(function() {
+          try {
+            const t = player.getCurrentTime();
+
+            if (t >= q.end) {
+              clearInterval(stopWatcher);
+              player.pauseVideo();
+              showCover();
+            }
+          } catch (e) {}
+        }, 50);
+      }
+    }
+
+    function playMuted() {
+      playSegment(false);
+    }
+
+    function replayMuted() {
+      playSegment(false);
+    }
+
+    function showQuote() {
+      document.getElementById("quote").style.visibility = "visible";
+      document.getElementById("source").style.visibility = "visible";
+    }
+
+    function playWithSound() {
+      showQuote();
+      playSegment(true);
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+      } else {
+        alert("마지막 문제입니다.");
+      }
+    }
+  </script>
+
+</body>
+</html>
