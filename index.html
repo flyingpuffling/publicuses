@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>영상 대사 퀴즈</title>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -12,15 +13,13 @@
       background: #111;
       color: white;
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
     }
 
     .quiz-container {
       width: 92%;
       max-width: 1100px;
+      margin: 0 auto;
       text-align: center;
       padding: 28px 0;
     }
@@ -40,8 +39,8 @@
       position: relative;
     }
 
-    /* Crop the YouTube iframe itself so YouTube's title/channel strip
-       and bottom branding sit outside the visible quiz window. */
+    /* Crop the YouTube iframe so YouTube's top/bottom overlays
+       sit outside the visible quiz window as much as possible. */
     #player {
       position: absolute;
       width: 112%;
@@ -124,10 +123,92 @@
       background: #666;
       color: white;
     }
+
+    /* Intro / rules page */
+    .intro-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #111;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .intro-card {
+      width: min(760px, 92vw);
+      text-align: left;
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 38px 42px;
+      background: #171717;
+    }
+
+    .intro-card h1 {
+      margin: 0 0 26px 0;
+      font-size: 2.3rem;
+      text-align: center;
+    }
+
+    .intro-card ul {
+      margin: 0;
+      padding-left: 1.5em;
+      font-size: 1.35rem;
+      line-height: 1.8;
+    }
+
+    .intro-note {
+      margin-top: 24px;
+      padding: 16px 18px;
+      background: #222;
+      border-radius: 8px;
+      font-size: 1.25rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .start-wrap {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .start-button {
+      padding: 14px 30px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      background: white;
+      color: black;
+    }
+
+    .hidden-screen {
+      display: none;
+    }
   </style>
 </head>
 
 <body>
+
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-card">
+      <h1>영상 대사 퀴즈</h1>
+
+      <ul>
+        <li>썸네일 장면의 대사 맞추기</li>
+        <li>대사, 드라마/영화 제목, 등장인물 이름을 다 맞추면 3점</li>
+      </ul>
+
+      <div class="intro-note">
+        무조건 대사와 함께 말해야 함
+      </div>
+
+      <div class="start-wrap">
+        <button class="start-button" onclick="startQuiz()">퀴즈 시작</button>
+      </div>
+    </div>
+  </div>
+
   <div class="quiz-container">
 
     <div class="counter">
@@ -159,7 +240,15 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
+    /*
+      Order:
+      1-10 TV / drama first, with 태양의 후예 fixed at #8.
+      Films are placed afterward.
+      Star Wars is the final question.
+    */
     const questions = [
+
+      // 1
       {
         videoId: "qHRF1an9ygs",
         thumbnail: "thumbnails/01.jpg",
@@ -169,6 +258,8 @@
         source: "오징어게임",
         character: "오일남"
       },
+
+      // 2
       {
         videoId: "UJZqS8dyUA8",
         thumbnail: "thumbnails/02.jpg",
@@ -178,6 +269,8 @@
         source: "파리의 연인",
         character: "한기주"
       },
+
+      // 3
       {
         videoId: "pQpHe9S1oLk",
         thumbnail: "thumbnails/03.jpg",
@@ -187,6 +280,8 @@
         source: "도깨비",
         character: ""
       },
+
+      // 4
       {
         videoId: "sycCLllS9qs",
         thumbnail: "thumbnails/04.jpg",
@@ -196,6 +291,8 @@
         source: "부부의 세계",
         character: "이태오"
       },
+
+      // 5
       {
         videoId: "bjOShto2gJA",
         thumbnail: "thumbnails/05.jpg",
@@ -205,6 +302,8 @@
         source: "나의 해방일지",
         character: "염미정"
       },
+
+      // 6
       {
         videoId: "QzjqVxML3zc",
         thumbnail: "thumbnails/06.jpg",
@@ -214,6 +313,8 @@
         source: "시크릿 가든",
         character: "김주원"
       },
+
+      // 7
       {
         videoId: "FtTlD6uWBWY",
         thumbnail: "thumbnails/07.jpg",
@@ -221,18 +322,21 @@
         end: 103,
         quote: "우린 아직 다 미생이야.",
         source: "미생",
-        character: "오상식",
-        cropTop: true
+        character: "오상식"
       },
+
+      // 8 — requested position
       {
-        videoId: "buCg8rThVfo",
-        thumbnail: "thumbnails/08.jpg",
-        start: 4,
-        end: 11,
-        quote: "살려는 드릴게",
-        source: "신세계",
-        character: "이중구"
+        videoId: "9BVs5G9rVzc",
+        thumbnail: "thumbnails/12.jpg",
+        start: 119,
+        end: 128,
+        quote: "그 어려운 걸 자꾸 해냅니다, 내가",
+        source: "태양의 후예",
+        character: "유시진"
       },
+
+      // 9
       {
         videoId: "fSf05ZftFNw",
         thumbnail: "thumbnails/09.jpg",
@@ -242,6 +346,8 @@
         source: "불새",
         character: "서정민"
       },
+
+      // 10
       {
         videoId: "mPsAQ8e1bmA",
         thumbnail: "thumbnails/10.jpg",
@@ -250,17 +356,81 @@
         quote: "홍시맛이 났는데 어찌 홍시라 생각했느냐 하시면 그냥 홍시맛이 나서 홍시라 생각한 것인데",
         source: "대장금",
         character: "장금이"
+      },
+
+      // 11 — film
+      {
+        videoId: "buCg8rThVfo",
+        thumbnail: "thumbnails/08.jpg",
+        start: 4,
+        end: 11,
+        quote: "살려는 드릴게",
+        source: "신세계",
+        character: "이중구"
+      },
+
+      // 12 — film
+      {
+        videoId: "XsM-QWpDgBg",
+        thumbnail: "thumbnails/15.jpg",
+        start: 16,
+        end: 20,
+        quote: "묻고 더블로 가!",
+        source: "타짜",
+        character: ""
+      },
+
+      // 13 — film
+      // Playback timestamps were not provided, so this currently plays from the beginning to the end.
+      {
+        videoId: "XXr7DabYqsc",
+        thumbnail: "thumbnails/14.jpg",
+        start: 119,
+        end: 137,
+        quote: "어떻게 사랑이 변하니",
+        source: "봄날은 간다",
+        character: "상우"
+      },
+
+      // 14 — film
+      {
+        videoId: "fos5qYYDED0",
+        thumbnail: "thumbnails/13.jpg",
+        start: 5,
+        end: 9,
+        quote: "내가 왕이 될 상인가",
+        source: "관상",
+        character: "수양대군"
+      },
+
+      // 15 — final question
+      {
+        videoId: "GLheiLGZ1k8",
+        thumbnail: "thumbnails/11.jpg",
+        start: 114,
+        end: 118,
+        quote: "I am your father.",
+        source: "Star Wars: The Empire Strikes Back / 스타워즈: 제국의 역습",
+        character: "다스 베이더"
       }
+
     ];
 
     let player;
     let currentQuestion = 0;
     let stopTimer;
+    let quizStarted = false;
 
     const cover = document.getElementById("video-cover");
     const coverImage = document.getElementById("cover-image");
 
     document.getElementById("total-number").textContent = questions.length;
+
+    function startQuiz() {
+      quizStarted = true;
+      document.getElementById("intro-screen").classList.add("hidden-screen");
+      loadQuestion();
+    }
 
     function onYouTubeIframeAPIReady() {
       player = new YT.Player("player", {
@@ -274,7 +444,11 @@
           playsinline: 1
         },
         events: {
-          onReady: loadQuestion,
+          onReady: function() {
+            if (quizStarted) {
+              loadQuestion();
+            }
+          },
           onStateChange: function(event) {
             if (event.data === YT.PlayerState.ENDED) {
               showCover();
@@ -293,6 +467,11 @@
     }
 
     function loadQuestion() {
+      if (!player || typeof player.cueVideoById !== "function") {
+        setTimeout(loadQuestion, 100);
+        return;
+      }
+
       clearTimeout(stopTimer);
 
       const q = questions[currentQuestion];
@@ -304,9 +483,6 @@
 
       document.getElementById("quote").style.visibility = "hidden";
       document.getElementById("source").style.visibility = "hidden";
-
-      const container = document.getElementById("video-container");
-      container.classList.toggle("crop-top", !!q.cropTop);
 
       coverImage.src = q.thumbnail;
       showCover();
@@ -370,5 +546,6 @@
       }
     }
   </script>
+
 </body>
 </html>
