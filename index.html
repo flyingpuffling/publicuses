@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>영상 대사 퀴즈</title>
+  <title>영상 대사 퀴즈 - 15문제</title>
 
   <style>
     * { box-sizing: border-box; }
@@ -47,6 +47,14 @@
       height: 126%;
       left: -6%;
       top: -13%;
+    }
+
+    /* Extra crop for videos with hardcoded subtitles at the bottom. */
+    .video-container.crop-bottom #player {
+      width: 124%;
+      height: 142%;
+      left: -12%;
+      top: -8%;
     }
 
     .video-cover {
@@ -192,7 +200,7 @@
 
   <div id="intro-screen" class="intro-screen">
     <div class="intro-card">
-      <h1>영상 대사 퀴즈</h1>
+      <h1>영상 대사 퀴즈 <span style="font-size:0.55em;color:#aaa;">(총 15문제)</span></h1>
 
       <ul>
         <li>썸네일 장면의 대사 맞추기</li>
@@ -294,13 +302,14 @@
 
       // 5
       {
-        videoId: "bjOShto2gJA",
+        videoId: "CuRqGA7Wjcg",
         thumbnail: "thumbnails/05.jpg",
         start: 0,
-        end: null,
+        end: 7,
         quote: "날 추앙해요",
         source: "나의 해방일지",
-        character: "염미정"
+        character: "염미정",
+        cropBottom: true
       },
 
       // 6
@@ -319,7 +328,7 @@
         videoId: "FtTlD6uWBWY",
         thumbnail: "thumbnails/07.jpg",
         start: 96,
-        end: 103,
+        end: 105,
         quote: "우린 아직 다 미생이야.",
         source: "미생",
         character: "오상식"
@@ -327,10 +336,10 @@
 
       // 8 — requested position
       {
-        videoId: "9BVs5G9rVzc",
+        videoId: "lzQifdOw5Rc",
         thumbnail: "thumbnails/12.jpg",
-        start: 119,
-        end: 128,
+        start: 0,
+        end: null,
         quote: "그 어려운 걸 자꾸 해냅니다, 내가",
         source: "태양의 후예",
         character: "유시진"
@@ -374,7 +383,7 @@
         videoId: "XsM-QWpDgBg",
         thumbnail: "thumbnails/15.jpg",
         start: 16,
-        end: 20,
+        end: 22,
         quote: "묻고 더블로 가!",
         source: "타짜",
         character: ""
@@ -397,7 +406,7 @@
         videoId: "fos5qYYDED0",
         thumbnail: "thumbnails/13.jpg",
         start: 5,
-        end: 9,
+        end: 11,
         quote: "내가 왕이 될 상인가",
         source: "관상",
         character: "수양대군"
@@ -441,10 +450,16 @@
           controls: 0,
           disablekb: 1,
           rel: 0,
-          playsinline: 1
+          playsinline: 1,
+          cc_load_policy: 0,
+          iv_load_policy: 3
         },
         events: {
-          onReady: function() {
+          onReady: function(event) {
+            try {
+              event.target.unloadModule("captions");
+            } catch (e) {}
+
             if (quizStarted) {
               loadQuestion();
             }
@@ -484,6 +499,9 @@
       document.getElementById("quote").style.visibility = "hidden";
       document.getElementById("source").style.visibility = "hidden";
 
+      const container = document.getElementById("video-container");
+      container.classList.toggle("crop-bottom", !!q.cropBottom);
+
       coverImage.src = q.thumbnail;
       showCover();
 
@@ -491,6 +509,12 @@
         videoId: q.videoId,
         startSeconds: q.start
       });
+
+      setTimeout(function() {
+        try {
+          player.unloadModule("captions");
+        } catch (e) {}
+      }, 400);
     }
 
     function playSegment(soundOn) {
