@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>영상 대사 퀴즈</title>
-
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       background: #111;
@@ -18,16 +19,17 @@
     }
 
     .quiz-container {
-      width: 90%;
+      width: 92%;
       max-width: 1100px;
       text-align: center;
-      padding: 30px 0;
+      padding: 28px 0;
     }
 
     .counter {
       text-align: right;
       color: #aaa;
       margin-bottom: 10px;
+      font-size: 1.05rem;
     }
 
     .video-container {
@@ -46,7 +48,7 @@
     .video-cover {
       position: absolute;
       inset: 0;
-      z-index: 20;
+      z-index: 10;
       background: black;
       display: flex;
       justify-content: center;
@@ -61,20 +63,19 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
       background: black;
-      user-select: none;
-      -webkit-user-drag: none;
     }
 
-    /* 미생처럼 상단 로고를 가릴 때만 적용 */
+    /* Only for the actual Misaeng YouTube player, not the uploaded cover image */
     .video-container.crop-top #player {
       transform: scale(1.08) translateY(-2.5%);
       transform-origin: center center;
     }
 
     .quote {
-      min-height: 80px;
-      margin-top: 25px;
+      min-height: 76px;
+      margin-top: 22px;
       font-size: 2rem;
       font-weight: bold;
       line-height: 1.45;
@@ -86,14 +87,14 @@
 
     .source {
       min-height: 28px;
-      margin-top: 8px;
+      margin-top: 7px;
       color: #aaa;
       font-size: 1.05rem;
       visibility: hidden;
     }
 
     .controls {
-      margin-top: 25px;
+      margin-top: 24px;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
@@ -108,9 +109,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      opacity: 0.8;
-    }
+    button:hover { opacity: 0.8; }
 
     .primary {
       background: white;
@@ -130,7 +129,6 @@
 </head>
 
 <body>
-
   <div class="quiz-container">
 
     <div class="counter">
@@ -140,8 +138,9 @@
 
     <div id="video-container" class="video-container">
       <div id="player"></div>
+
       <div id="video-cover" class="video-cover">
-        <img id="cover-image" src="" alt="영상 미리보기">
+        <img id="cover-image" src="" alt="문제 장면">
       </div>
     </div>
 
@@ -149,27 +148,11 @@
     <div id="source" class="source"></div>
 
     <div class="controls">
-
-      <button class="primary" onclick="playMuted()">
-        ▶ 무음으로 재생
-      </button>
-
-      <button class="secondary" onclick="replayMuted()">
-        ↻ 다시 재생
-      </button>
-
-      <button class="secondary" onclick="showQuote()">
-        대사 공개
-      </button>
-
-      <button class="primary" onclick="playWithSound()">
-        🔊 소리와 함께 재생
-      </button>
-
-      <button class="next" onclick="nextQuestion()">
-        다음 →
-      </button>
-
+      <button class="primary" onclick="playMuted()">▶ 무음으로 재생</button>
+      <button class="secondary" onclick="replayMuted()">↻ 다시 재생</button>
+      <button class="secondary" onclick="showQuote()">대사 공개</button>
+      <button class="primary" onclick="playWithSound()">🔊 소리와 함께 재생</button>
+      <button class="next" onclick="nextQuestion()">다음 →</button>
     </div>
 
   </div>
@@ -177,72 +160,64 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
-
     const questions = [
-
       {
         videoId: "qHRF1an9ygs",
-        thumbnailTime: 8,
+        thumbnail: "thumbnails/01.jpg",
         start: 0,
         end: 14,
         quote: "이러다가는 다 죽어",
         source: "오징어게임",
         character: "오일남"
       },
-
       {
         videoId: "UJZqS8dyUA8",
-        thumbnailTime: 284,
+        thumbnail: "thumbnails/02.jpg",
         start: 204,
         end: 285,
         quote: "애기야 가자!",
         source: "파리의 연인",
         character: "한기주"
       },
-
       {
         videoId: "pQpHe9S1oLk",
-        thumbnailTime: 0,
+        thumbnail: "thumbnails/03.jpg",
         start: 0,
         end: 30,
         quote: "너와 함께한 시간 모두 눈부셨다. 날이 좋아서, 날이 좋지 않아서, 날이 적당해서, 모든 날이 좋았다.",
         source: "도깨비",
         character: ""
       },
-
       {
         videoId: "sycCLllS9qs",
-        thumbnailTime: 113,
+        thumbnail: "thumbnails/04.jpg",
         start: 93,
         end: 115,
         quote: "사랑에 빠진 게 죄는 아니잖아!",
         source: "부부의 세계",
         character: "이태오"
       },
-
       {
         videoId: "bjOShto2gJA",
-        thumbnailTime: 0,
+        thumbnail: "thumbnails/05.jpg",
         start: 0,
         end: null,
         quote: "날 추앙해요",
         source: "나의 해방일지",
         character: "염미정"
       },
-
       {
         videoId: "QzjqVxML3zc",
-        thumbnailTime: 0,
+        thumbnail: "thumbnails/06.jpg",
         start: 0,
         end: null,
         quote: "이게 최선입니까? 확실해요?",
         source: "시크릿 가든",
         character: "김주원"
       },
-
       {
         videoId: "FtTlD6uWBWY",
-        thumbnailTime: 100,
+        thumbnail: "thumbnails/07.jpg",
         start: 96,
         end: 103,
         quote: "우린 아직 다 미생이야.",
@@ -250,42 +225,41 @@
         character: "오상식",
         cropTop: true
       },
-
       {
         videoId: "buCg8rThVfo",
-        thumbnailTime: 9,
+        thumbnail: "thumbnails/08.jpg",
         start: 4,
         end: 11,
         quote: "살려는 드릴게",
         source: "신세계",
         character: "이중구"
       },
-
       {
         videoId: "fSf05ZftFNw",
-        thumbnailTime: 130,
+        thumbnail: "thumbnails/09.jpg",
         start: 130,
         end: 145,
         quote: "뭐 타는 냄새 안 나요? 내 마음이 지금 불타고 있잖아요.",
         source: "불새",
         character: "서정민"
       },
-
       {
         videoId: "mPsAQ8e1bmA",
-        thumbnailTime: 827,
+        thumbnail: "thumbnails/10.jpg",
         start: 822,
         end: 836,
         quote: "홍시맛이 났는데 어찌 홍시라 생각했느냐 하시면 그냥 홍시맛이 나서 홍시라 생각한 것인데",
         source: "대장금",
         character: "장금이"
       }
-
     ];
 
     let player;
     let currentQuestion = 0;
     let stopTimer;
+
+    const cover = document.getElementById("video-cover");
+    const coverImage = document.getElementById("cover-image");
 
     document.getElementById("total-number").textContent = questions.length;
 
@@ -293,22 +267,30 @@
       player = new YT.Player("player", {
         height: "100%",
         width: "100%",
-        videoId: questions[currentQuestion].videoId,
-
+        videoId: questions[0].videoId,
         playerVars: {
           controls: 0,
           disablekb: 1,
           rel: 0,
-          modestbranding: 1,
           playsinline: 1
         },
-
         events: {
-          onReady: function () {
-            loadQuestion();
+          onReady: loadQuestion,
+          onStateChange: function(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+              showCover();
+            }
           }
         }
       });
+    }
+
+    function showCover() {
+      cover.classList.remove("hidden");
+    }
+
+    function hideCover() {
+      cover.classList.add("hidden");
     }
 
     function loadQuestion() {
@@ -316,16 +298,10 @@
 
       const q = questions[currentQuestion];
 
-      document.getElementById("current-number").textContent =
-        currentQuestion + 1;
-
+      document.getElementById("current-number").textContent = currentQuestion + 1;
       document.getElementById("quote").textContent = q.quote;
-
-      const sourceText = q.character
-        ? `${q.source} · ${q.character}`
-        : q.source;
-
-      document.getElementById("source").textContent = sourceText;
+      document.getElementById("source").textContent =
+        q.character ? `${q.source} · ${q.character}` : q.source;
 
       document.getElementById("quote").style.visibility = "hidden";
       document.getElementById("source").style.visibility = "hidden";
@@ -333,24 +309,9 @@
       const container = document.getElementById("video-container");
       container.classList.toggle("crop-top", !!q.cropTop);
 
-      // 첫 화면에서는 YouTube iframe을 가려 제목/채널 UI가 보이지 않게 합니다.
-      // 기본값은 YouTube의 깨끗한 정적 썸네일입니다.
-      // 나중에 각 문제에 thumbnail: "thumbnails/01.jpg" 같은 값을 넣으면
-      // 원하는 정확한 장면 이미지로 교체할 수 있습니다.
-      const cover = document.getElementById("video-cover");
-      const coverImage = document.getElementById("cover-image");
+      coverImage.src = q.thumbnail;
+      showCover();
 
-      cover.classList.remove("hidden");
-
-      coverImage.src = q.thumbnail ||
-        `https://img.youtube.com/vi/${q.videoId}/maxresdefault.jpg`;
-
-      coverImage.onerror = function () {
-        this.onerror = null;
-        this.src = `https://img.youtube.com/vi/${q.videoId}/hqdefault.jpg`;
-      };
-
-      // 플레이어는 뒤에서 재생 시작 지점에 준비해 둡니다.
       player.cueVideoById({
         videoId: q.videoId,
         startSeconds: q.start
@@ -362,9 +323,7 @@
 
       const q = questions[currentQuestion];
 
-      // 재생을 누르는 순간 깨끗한 커버를 제거하고 실제 YouTube 영상을 보여줍니다.
-      document.getElementById("video-cover").classList.add("hidden");
-
+      hideCover();
       player.seekTo(q.start, true);
 
       if (soundOn) {
@@ -378,8 +337,9 @@
       if (q.end !== null && q.end !== undefined) {
         const duration = Math.max(0, (q.end - q.start) * 1000);
 
-        stopTimer = setTimeout(function () {
+        stopTimer = setTimeout(function() {
           player.pauseVideo();
+          showCover();
         }, duration);
       }
     }
@@ -410,8 +370,6 @@
         alert("마지막 문제입니다.");
       }
     }
-
   </script>
-
 </body>
 </html>
