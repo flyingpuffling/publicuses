@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123e43">
+<meta name="description" content="Public searchable Merge Mansion trade list; chain-aware and available offline after installation.">
+<meta name="application-name" content="Merge Mansion Trade Vault">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<title>Merge Mansion Trade Vault</title>
+<style>
+:root{color-scheme:light;--bg:#f4f5ef;--paper:#fff;--ink:#172d2d;--muted:#607872;--line:#dce7e3;--accent:#116a60;--shadow:0 6px 22px rgba(20,57,55,.07)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.45}
+button,input,select{font:inherit}
+button{touch-action:manipulation;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #66a99a;outline-offset:2px}
+.shell{width:100%;max-width:920px;margin:auto}
+header{background:#123e43;color:#fff;box-shadow:0 3px 20px #102c2915}
+.header-inner{padding:max(16px,env(safe-area-inset-top)) 16px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.mark{width:44px;height:44px;border-radius:13px;background:#d7e9c4;color:#12463d;display:grid;place-items:center;font-weight:850;font-size:23px;flex:none}
+h1{margin:0;font-size:22px;letter-spacing:-.035em;line-height:1.05}.sub{color:#bed6d0;font-size:12px;margin-top:5px}
+.public-tag{font-size:12px;font-weight:800;color:#d5e8de;border:1px solid #5b8480;padding:6px 9px;border-radius:999px;white-space:nowrap}
+main{padding:15px 12px max(72px,env(safe-area-inset-bottom))}
+.panel,.trade-card{background:white;border:1px solid var(--line);box-shadow:var(--shadow)}
+.panel{border-radius:17px;padding:14px}
+.top-label{font-size:12px;font-weight:750;color:#365752;display:block;margin-bottom:8px}
+.searchbar{position:relative}.magnifier{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#62827c;pointer-events:none}
+input[type=search],select{width:100%;min-height:47px;border:1px solid #c6d6d1;border-radius:11px;background:white;color:var(--ink);padding:10px 12px;font-size:16px}
+input[type=search]{padding:10px 42px 10px 40px;background:#f9fbf9}
+.clear-search{position:absolute;right:2px;top:2px;border:0;background:transparent;color:#597471;width:43px;height:43px;font-size:25px;display:none}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.tabs{display:flex;flex:1;min-width:226px;border:1px solid #c9dcd3;background:#f1f6f2;padding:3px;border-radius:13px;gap:2px}
+.tab{flex:1;min-height:40px;border:0;background:transparent;border-radius:9px;font-weight:750;color:#58716c;font-size:14px}
+.tab.active{background:#166b63;color:white;box-shadow:0 2px 7px #12564a29}
+.checkline{display:flex;align-items:center;gap:8px;color:#294d48;font-size:13px;font-weight:650;min-height:38px;cursor:pointer}.checkline input{accent-color:#116a60;width:19px;height:19px}
+.filters{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:10px;flex-wrap:wrap}.filter-label{font-size:12px;color:var(--muted)}.chain-select{max-width:260px;min-width:150px;min-height:41px;font-size:13px;padding:6px 9px}
+.chainhint{display:none;margin-top:10px;font-size:12px;line-height:1.5;background:#e9f5ef;color:#305a50;border-radius:10px;padding:10px 12px}.chainhint.visible{display:block}
+.section-row{margin:16px 2px 9px;display:flex;justify-content:space-between;align-items:center;gap:9px}.summary{font-size:13px;color:#47615d}.summary strong{color:#174f4b;font-size:16px}
+.sort-btn{background:transparent;border:0;color:#1e6d64;font-size:12px;font-weight:750;padding:8px;min-height:36px}
+.trade-head{display:grid;grid-template-columns:minmax(0,57%) minmax(0,43%);font-size:11px;color:#7a8885;font-weight:800;letter-spacing:.08em;padding:0 13px 8px;text-transform:uppercase}.trade-head span:nth-child(2){padding-left:12px}
+.rows{display:grid;gap:9px}.trade-card{border-radius:15px;overflow:hidden}.trade-grid{display:grid;grid-template-columns:minmax(0,57%) minmax(0,43%)}
+.give-col,.receive-col{min-width:0;padding:14px 10px 14px 13px}.receive-col{border-left:1px solid #e3eae6;background:#fcfdfb;padding-left:12px;padding-right:9px}
+.give-list{display:flex;flex-direction:column;gap:8px}.give-item{font-size:14px;font-weight:580;line-height:1.3;overflow-wrap:anywhere}.give-item+.give-item{border-top:1px solid #eef3f0;padding-top:8px}.give-item.match{color:#086154;font-weight:760}
+.target{font-size:15px;font-weight:820;line-height:1.28;overflow-wrap:anywhere;color:#173c3a}.lv{display:inline-block;vertical-align:middle;font-size:11px;background:#e0efeb;color:#20665d;border-radius:999px;padding:3px 7px;margin-left:4px;white-space:nowrap;font-weight:800}.highlight-target{background:#fff2cf;border-radius:4px}
+.empty{text-align:center;padding:35px 18px;background:white;border-radius:16px;border:1px solid var(--line);color:var(--muted)}.empty strong{color:#315e56;display:block;margin-bottom:8px;font-size:17px}
+.footer-note{font-size:12px;color:#687c76;margin:22px 5px 0;line-height:1.6}.footer-note a{color:#1e6d64}.error{background:#fff5ee;color:#85402c;padding:15px;border-radius:12px;border:1px solid #e9c7b6}
+@media(min-width:650px){.header-inner{padding:20px 25px}h1{font-size:26px}main{padding:22px 20px 100px}.panel{padding:18px}.trade-head{padding-left:19px}.give-col,.receive-col{padding:18px 19px}.give-item{font-size:15px}.target{font-size:16px}}
+@media(max-width:365px){h1{font-size:18px}.header-inner{padding-left:10px;padding-right:10px}.mark{width:39px;height:39px;font-size:19px}.give-col,.receive-col{padding:11px 8px}.target{font-size:14px}.give-item{font-size:13px}main{padding-left:8px;padding-right:8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="shell header-inner">
+  <div class="brand"><div class="mark" aria-hidden="true">&#8644;</div><div><h1>Trade Vault</h1><div class="sub">Merge Mansion trade lookup</div></div></div>
+  <span class="public-tag">Public list</span>
+</div></header>
+<main class="shell">
+  <section class="panel" aria-label="Search trades">
+    <label class="top-label" for="query">Search item name or merge chain</label>
+    <div class="searchbar"><span class="magnifier" aria-hidden="true">&#9906;</span><input id="query" type="search" placeholder="Ankh, Broom, Mosaic..." autocomplete="off" spellcheck="false"><button id="clearSearch" class="clear-search" type="button" aria-label="Clear search">&times;</button></div>
+    <div class="controls">
+      <div class="tabs" role="group" aria-label="Search direction">
+        <button type="button" class="tab active" data-dir="receive" aria-pressed="true">Receive</button>
+        <button type="button" class="tab" data-dir="give" aria-pressed="false">Give</button>
+        <button type="button" class="tab" data-dir="either" aria-pressed="false">Either</button>
+      </div>
+      <label class="checkline"><input type="checkbox" id="fullChain" checked>Include whole chain</label>
+    </div>
+    <div class="filters"><span class="filter-label">One row per item received.</span><select id="chainFilter" class="chain-select" aria-label="Filter received item chain"><option value="">All receive chains</option></select></div>
+    <div id="chainHint" class="chainhint" aria-live="polite"></div>
+  </section>
+  <div class="section-row"><div id="summary" class="summary" aria-live="polite">Loading published list...</div><button id="sort" class="sort-btn" type="button">Receive A-Z</button></div>
+  <div class="trade-head"><span>GIVE - ALL OPTIONS</span><span>RECEIVE</span></div>
+  <div id="results" class="rows" aria-label="Trade matches"></div>
+  <p class="footer-note">All trades are community reports; offers are not guaranteed. This is a <strong>shared, read-only list</strong>. Nobody's phone data changes the results. Updates are published to <a href="./trades.json" target="_blank" rel="noopener">trades.json</a> by the site maintainer.</p>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').toLowerCase().normalize('NFKD').replace(/[\u2019']/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+let DB={records:[],chains:{},aliases:{}},trades=[],CHAIN={},ALIASES={},direction='receive',sortMost=false;
+const matchedChains=query=>{
+  const q=norm(query).replace(/\s+l\s*\d+$/,'').trim(); if(q.length<3)return [];
+  const exact=Object.keys(CHAIN).filter(c=>norm(c)===q); if(exact.length)return exact;
+  return Object.keys(CHAIN).filter(c=>(CHAIN[c]||[]).some(item=>norm(item.name).includes(q)) || (ALIASES[c]||[]).some(a=>norm(a).includes(q)));
+};
+const itemMatch=(name,level,chain,query,matched)=>{
+  if(!query)return true;
+  if($('fullChain').checked&&matched.includes(chain))return true;
+  const searchable=norm(name+' L'+(level??''));return norm(query).split(' ').filter(Boolean).every(part=>searchable.includes(part));
+};
+function groupAll(){
+ const map=new Map();
+ for(const t of trades){
+  const key=norm(t.receive)+'|'+(t.receiveLevel??'?');
+  if(!map.has(key))map.set(key,{receive:t.receive,level:t.receiveLevel,chain:t.receiveChain,options:[]});
+  map.get(key).options.push(t);
+ }
+ for(const group of map.values()){
+   const seen=new Set();
+   group.options=group.options.filter(t=>{const id=norm(t.give)+'|'+(t.giveLevel??'?');if(seen.has(id))return false;seen.add(id);return true});
+   group.options.sort((a,b)=>a.give.localeCompare(b.give)||(a.giveLevel??0)-(b.giveLevel??0));
+ }
+ return [...map.values()];
+}
+const label=(name,level)=>esc(name)+(level!=null?' <span class="lv">L'+esc(level)+'</span>':'');
+function render(){
+ const q=$('query').value.trim(),active=$('fullChain').checked?matchedChains(q):[],filter=$('chainFilter').value;
+ document.querySelectorAll('[data-dir]').forEach(b=>{const selected=b.dataset.dir===direction;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected))});
+ $('clearSearch').style.display=q?'block':'none';
+ $('chainHint').classList.toggle('visible',!!(q&&active.length));
+ if(q&&active.length){const names=active.flatMap(c=>CHAIN[c].map(o=>o.name)).slice(0,14);$('chainHint').textContent='Matching chain: '+active.join(', ')+' | '+names.join(' | ')+(names.length===14?' ...':'');}
+ let groups=groupAll().filter(g=>{
+  if(filter && g.chain!==filter)return false;
+  const recv=itemMatch(g.receive,g.level,g.chain,q,active);
+  const give=g.options.some(o=>itemMatch(o.give,o.giveLevel,o.giveChain,q,active));
+  return !q || (direction==='receive'?recv:direction==='give'?give:recv||give);
+ });
+ groups.sort((a,b)=>sortMost?(b.options.length-a.options.length)||a.receive.localeCompare(b.receive):a.receive.localeCompare(b.receive)||(a.level??-1)-(b.level??-1));
+ const count=groups.reduce((n,g)=>n+g.options.length,0);
+ $('summary').innerHTML='<strong>'+groups.length+'</strong> receive items | <strong>'+count+'</strong> trade options';
+ $('sort').textContent=sortMost?'Most options first':'Receive A-Z';
+ $('results').innerHTML=groups.length?groups.map(g=>{
+  const giveHtml=g.options.map(o=>'<div class="give-item'+(q&&direction!=='receive'&&itemMatch(o.give,o.giveLevel,o.giveChain,q,active)?' match':'')+'">'+label(o.give,o.giveLevel)+'</div>').join('');
+  const targetMatch=q&&direction!=='give'&&itemMatch(g.receive,g.level,g.chain,q,active);
+  return '<article class="trade-card"><div class="trade-grid"><div class="give-col"><div class="give-list">'+giveHtml+'</div></div><div class="receive-col"><div class="target'+(targetMatch?' highlight-target':'')+'">'+label(g.receive,g.level)+'</div></div></div></article>';
+ }).join(''):'<div class="empty"><strong>No matching trades</strong>Try another item, search direction, or switch off whole-chain matching.</div>';
+}
+async function boot(){
+ try{
+  const response=await fetch('./trades.json',{cache:'no-cache'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.records)||!data.chains||!data.aliases)throw Error('Invalid trade data');
+  DB=data;trades=data.records;CHAIN=data.chains;ALIASES=data.aliases;
+  const chains=[...new Set([...Object.keys(CHAIN),...trades.map(t=>t.receiveChain)])].filter(c=>c&&c!=='Not classified').sort((a,b)=>a.localeCompare(b));
+  $('chainFilter').innerHTML='<option value="">All receive chains</option>'+chains.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  render();
+ }catch(error){
+  $('summary').textContent='Could not load published trade list';
+  $('results').innerHTML='<div class="error"><strong>Trade data unavailable.</strong> Please reload the website. Check that <code>trades.json</code> is uploaded beside <code>index.html</code> on GitHub Pages.<p>'+esc(error.message)+'</p></div>';
+ }
+}
+$('query').addEventListener('input',render);
+$('clearSearch').addEventListener('click',()=>{$('query').value='';render();$('query').focus()});
+document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('click',()=>{direction=b.dataset.dir;render()}));
+$('fullChain').addEventListener('change',render);
+$('chainFilter').addEventListener('change',render);
+$('sort').addEventListener('click',()=>{sortMost=!sortMost;render()});
+if(('serviceWorker' in navigator)&&(location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname))){
+ navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+}
+boot();
+</script>
+</body></html>
